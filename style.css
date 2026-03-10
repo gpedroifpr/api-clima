@@ -151,3 +151,22 @@ button:active {
 .shake {
     animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
 }
+
+/* =========================================
+   ESTILOS DO MAPA (LEAFLET)
+========================================= */
+.map-container {
+    height: 200px;
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    /* O z-index garante que o mapa não fique por cima de outros elementos indesejados */
+    z-index: 1; 
+    border: 2px solid #ecf0f1;
+}
+
+/* Ajustando o layout da aplicação para acomodar o mapa sem apertar */
+.container {
+    max-width: 450px; /* Aumentei um pouquinho a largura */
+}

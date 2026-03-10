@@ -17,6 +17,10 @@ const historyButtonsContainer = document.getElementById('history-buttons');
 
 let history = JSON.parse(localStorage.getItem('historico_cidades')) ||[];
 
+// Variáveis Globais para o Mapa
+let map;
+let marker;
+
 window.onload = () => {
     const savedWeather = localStorage.getItem('clima_salvo');
     if (savedWeather) {
@@ -26,28 +30,19 @@ window.onload = () => {
     updateHistoryUI();
 };
 
-// ==========================================
-// FASE 3: CONEXÃO COM A REDE (Fetch API)
-// ==========================================
 async function getWeather(city) {
     try {
         const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=pt_br`;
-        
         const response = await fetch(url);
         const data = await response.json();
 
-        // LOG PARA DEBUG: Pressione F12 no navegador para ver o que a API respondeu
-        console.log("Resposta da API:", data); 
-
-        // Se a requisição não der certo (ex: erro 404 ou 401)
         if (!response.ok) {
             if (data.cod == 401) {
-                // Erro 401 significa que a API Key é inválida ou não ativou ainda
-                showError("Erro 401: Chave da API inválida ou ainda não ativada. Aguarde uns minutos!");
+                showError("Erro 401: Chave da API inválida ou ainda não ativada.");
             } else {
-                showError("Cidade não encontrada. Verifique o nome e tente novamente.");
+                showError("Cidade não encontrada. Verifique o nome.");
             }
-            return; // Para a execução da função aqui
+            return; 
         }
 
         updateUI(data);
@@ -55,14 +50,10 @@ async function getWeather(city) {
         addToHistory(data.name);
 
     } catch (error) {
-        console.error("Erro na requisição:", error);
-        showError("Erro na conexão. Verifique sua internet.");
+        showError("Erro na conexão com a API.");
     }
 }
 
-// ==========================================
-// DESAFIO NÍVEL 2: GEOLOCATION API
-// ==========================================
 async function getWeatherByLocation(lat, lon) {
     try {
         const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=pt_br`;
@@ -78,7 +69,6 @@ async function getWeatherByLocation(lat, lon) {
         saveToCache(data);
         addToHistory(data.name);
     } catch (error) {
-        console.error("Erro na requisição por GPS:", error);
         showError("Erro na conexão com a API.");
     }
 }
@@ -89,18 +79,12 @@ locationBtn.addEventListener('click', () => {
             (position) => {
                 getWeatherByLocation(position.coords.latitude, position.coords.longitude);
             },
-            () => {
-                showError("Acesso à localização negado pelo usuário.");
-            }
+            () => { showError("Acesso à localização negado."); }
         );
     } else {
         showError("Seu navegador não suporta geolocalização.");
     }
 });
-
-// ==========================================
-// FUNÇÕES AUXILIARES E MANIPULAÇÃO DO DOM
-// ==========================================
 
 function updateUI(data) {
     errorMessage.classList.add('hidden');
@@ -112,30 +96,47 @@ function updateUI(data) {
     
     const iconCode = data.weather[0].icon;
     iconElement.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+    // ==========================================
+    // LÓGICA DO MAPA (LEAFLET)
+    // ==========================================
+    const lat = data.coord.lat;
+    const lon = data.coord.lon;
+
+    if (!map) {
+        // Se o mapa ainda não existe, cria ele
+        map = L.map('map').setView([lat, lon], 12);
+        
+        // Adiciona a camada de imagens do OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Cria o pino (marcador)
+        marker = L.marker([lat, lon]).addTo(map);
+    } else {
+        // Se o mapa já existe, apenas move a câmera e o pino para a nova cidade
+        map.setView([lat, lon], 12);
+        marker.setLatLng([lat, lon]);
+    }
+
+    // Truque: Quando o mapa é carregado dentro de uma div que estava escondida (hidden), 
+    // ele pode bugar o tamanho cinza. Isso força ele a recalcular o tamanho correto em 0.1 segundo.
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 100);
 }
 
 function saveToCache(data) {
     localStorage.setItem('clima_salvo', JSON.stringify(data));
 }
 
-// ----------------------------------------------------
-// ✨ O TRUQUE DE UX PARA A MENSAGEM DE ERRO
-// ----------------------------------------------------
 function showError(mensagem) {
     weatherCard.classList.add('hidden');
-    
-    // Atualiza o texto do erro dependendo do que aconteceu
     errorMessage.innerText = mensagem; 
     errorMessage.classList.remove('hidden');
-
-    // Remove a classe de tremor (se já existir)
     errorMessage.classList.remove('shake');
-    
-    // TRUQUE (Reflow): Força o navegador a recalcular a tela. 
-    // Sem isso, o CSS não reinicia a animação.
     void errorMessage.offsetWidth; 
-    
-    // Adiciona a classe novamente, fazendo o erro "tremer" toda vez que falhar
     errorMessage.classList.add('shake');
 }
 
@@ -151,24 +152,16 @@ cityInput.addEventListener('keypress', (e) => {
     }
 });
 
-// ==========================================
-// DESAFIO NÍVEL 1: HISTÓRICO DAS ÚLTIMAS 5
-// ==========================================
 function addToHistory(cityName) {
     history = history.filter(city => city !== cityName);
     history.unshift(cityName);
-    
-    if (history.length > 5) {
-        history.pop();
-    }
-
+    if (history.length > 5) history.pop();
     localStorage.setItem('historico_cidades', JSON.stringify(history));
     updateHistoryUI();
 }
 
 function updateHistoryUI() {
     if (history.length === 0) return;
-    
     historySection.classList.remove('hidden');
     historyButtonsContainer.innerHTML = ''; 
 

@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estação Meteorológica Pessoal</title>
+    
+    <!-- CSS do Leaflet (Mapa) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Nosso CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,7 +20,6 @@
             <button id="location-btn" title="Meu Local Atual">📍</button>
         </div>
 
-        <!-- Mensagem de erro -->
         <p id="error-message" class="hidden">Cidade não encontrada. Tente novamente.</p>
 
         <!-- Card de Clima -->
@@ -27,15 +30,20 @@
                 <h1 id="temperature">0°C</h1>
             </div>
             <p id="description">Descrição do Clima</p>
+            
+            <!-- NOVO: Container do Mapa -->
+            <div id="map" class="map-container"></div>
         </div>
 
-        <!-- Desafio Nível 1: Histórico -->
         <div id="history-section" class="hidden">
             <h3>Últimas Pesquisas</h3>
             <div id="history-buttons"></div>
         </div>
     </div>
 
+    <!-- JS do Leaflet (Mapa) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Nosso Script -->
     <script src="script.js"></script>
 </body>
 </html>
