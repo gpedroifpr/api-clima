@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estação Meteorológica Pessoal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🌤️ Previsão do Tempo</h1>
+        
+        <div class="search-box">
+            <input type="text" id="city-input" placeholder="Digite o nome da cidade...">
+            <button id="search-btn">Buscar</button>
+            <button id="location-btn" title="Meu Local Atual">📍</button>
+        </div>
+
+        <!-- Mensagem de erro -->
+        <p id="error-message" class="hidden">Cidade não encontrada. Tente novamente.</p>
+
+        <!-- Card de Clima -->
+        <div id="weather-card" class="card hidden">
+            <h2 id="city-name">Nome da Cidade</h2>
+            <div class="weather-info">
+                <img id="weather-icon" src="" alt="Ícone do Clima">
+                <h1 id="temperature">0°C</h1>
+            </div>
+            <p id="description">Descrição do Clima</p>
+        </div>
+
+        <!-- Desafio Nível 1: Histórico -->
+        <div id="history-section" class="hidden">
+            <h3>Últimas Pesquisas</h3>
+            <div id="history-buttons"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
